@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Video Gallery</title>
+    <style>
+        /* General reset for consistent styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #ffffff;
+            background-color: #202944; /* Dark background */
+            background-image: url('assets/images/contact-bg.jpg'); /* Optional background */
+            background-size: cover;
+            overflow-x: hidden;
+        }
+
+        /* Header styling */
+        header {
+            background-color: #f5a425; /* Base background color */
+            color: #000000; /* Text color */
+            text-align: center;
+            padding: 70px 20px; /* Increased padding for better header size */
+            position: relative;
+            background-image: url('assets/images/toolate.jpg'); /* Background image */
+            background-size: cover;
+            background-position: center 20%;
+        }
+
+        header h1, header h4 {
+    position: relative;
+    z-index: 2;
+    font-size: 3rem;
+    line-height: 1.2; /* Adjusted for better readability */
+    text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.5); /* Text shadow added */
+}
+
+
+        /* Search Bar Styles */
+        .search-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .search-bar {
+            padding: 10px;
+            font-size: 1.2rem;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 5px;
+            border: 2px solid #f5a425;
+            background-color: #333;
+            color: white;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .video-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background-color: transparent;
+            border-radius: 8px;
+            box-shadow: none;
+            transition: transform 0.3s ease;
+            position: relative;
+            text-align: center;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: auto;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .video-thumbnail:hover {
+            transform: scale(1.05);
+        }
+
+        .video-thumbnail::after {
+            content: '▶';
+            font-size: 40px;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-thumbnail:hover::after {
+            opacity: 1;
+        }
+
+        .video-info {
+            padding: 8px;
+            background-color: #333;
+            width: 100%;
+        }
+
+        .video-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #f5a425;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .video-description {
+            font-size: 0.8em; /* Reduced font size for mobile */
+            color: #DFF2EB;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .video-player {
+            display: none; /* Initially hidden */
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        footer {
+            background-color: #2A3663;
+            color: #DFF2EB;
+            text-align: center;
+            padding: 15px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Loading screen styles */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2rem;
+            display: none;
+        }
+
+        /* Option buttons container */
+        .options-container {
+            display: none;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .options-container button {
+            background-color: #f5a425;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .options-container button:hover {
+            background-color: #D67A2F;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 767px) {
+            header h1 {
+                font-size: 2.5rem; /* Smaller header size */
+                line-height: 1.2;
+            }
+
+            .container {
+                grid-template-columns: 1fr; /* Single column layout for mobile */
+                padding: 10px;
+            }
+
+            .video-thumbnail {
+                padding-top: 60%; /* Slightly larger aspect ratio for mobile */
+            }
+
+            .video-title {
+                font-size: 1em; /* Smaller title font */
+            }
+
+            .video-description {
+                font-size: 0.75em; /* Even smaller description font */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>TOO LATE <h3>SERIES</h3></h1>
+</header>
+
+<!-- Search Bar -->
+<div class="search-container">
+    <input type="text" id="searchBar" class="search-bar" placeholder="Search videos by title..." oninput="searchVideos()">
+</div>
+
+<!-- Loading Screen -->
+<div class="loading-screen" id="loadingScreen">
+    Loading...
+</div>
+
+<div class="container" id="videoContainer">
+    <!-- Video 1 -->
+    <div class="video-item" data-title="EPISODI 3 ">
+        <div class="video-thumbnail" onclick="playVideo('video1')" style="background-image: url('toolate/ep3.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">EPISODI 3</div>
+            <div class="video-description">Uploaded on 14 Oct 2021</div>
+        </div>
+        <video id="video1" class="video-player" controls preload="none">
+            <source src="toolate/Too Late_Episodi 3.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Video 2 -->
+    <div class="video-item" data-title="EPISODI 2">
+        <div class="video-thumbnail" onclick="playVideo('video2')" style="background-image: url('toolate/ep2.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">SHOK MISIONI</div>
+            <div class="video-description">Uploaded on 30 Mar 2021</div>
+        </div>
+        <video id="video2" class="video-player" controls preload="none">
+            <source src="toolate/ep2.webp" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Video 3 -->
+    <div class="video-item" data-title="EPISODI 1">
+        <div class="video-thumbnail" onclick="playVideo('video3')" style="background-image: url('toolate/ep1.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">EPISODI 1</div>
+            <div class="video-description">Uploaded on 3 Jan 2021</div>
+        </div>
+        <video id="video3" class="video-player" controls preload="none">
+            <source src="toolate/Too Late_Episodi-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+</div>
+   
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+<footer>
+    <p>&copy; TOO LATE</p>
+</footer>
+
+<div class="options-container" id="optionsContainer">
+    <button onclick="chooseNextVideo()">Next Video</button>
+    <button onclick="choosePreview()">Preview</button>
+</div>
+
+<script>
+    let currentVideo = null;
+
+    // Play video when thumbnail is clicked
+    function playVideo(videoId) {
+        if (currentVideo) {
+            currentVideo.pause();
+            currentVideo.style.display = 'none';
+        }
+
+        const videoElement = document.getElementById(videoId);
+        const videoThumbnail = videoElement.previousElementSibling;
+
+        // Show loading screen when video is starting
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.display = 'flex';
+
+        // Hide thumbnail and show video player
+        videoThumbnail.style.display = 'none';
+        videoElement.style.display = 'block';
+
+        // Play video when it's ready
+        videoElement.load();
+        videoElement.play();
+
+        // Hide loading screen once video is ready to play
+        videoElement.oncanplaythrough = function() {
+            loadingScreen.style.display = 'none';
+        };
+
+        // Request fullscreen for the video
+        if (videoElement.requestFullscreen) {
+            videoElement.requestFullscreen();
+        } else if (videoElement.mozRequestFullScreen) {
+            videoElement.mozRequestFullScreen();
+        } else if (videoElement.webkitRequestFullscreen) {
+            videoElement.webkitRequestFullscreen();
+        } else if (videoElement.msRequestFullscreen) {
+            videoElement.msRequestFullscreen();
+        }
+
+        // Automatically show options after video ends
+        videoElement.addEventListener('ended', function() {
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.style.display = 'flex'; // Show options
+        });
+
+        // Set current video to the one playing
+        currentVideo = videoElement;
+    }
+
+    // Listen for fullscreen change event
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+        // If exiting fullscreen, hide the current video and show the thumbnail
+        if (!document.fullscreenElement && currentVideo) {
+            currentVideo.pause();
+            currentVideo.style.display = 'none'; // Hide video
+            const videoThumbnail = currentVideo.previousElementSibling;
+            videoThumbnail.style.display = 'block'; // Show thumbnail again
+        }
+    }
+
+    // Function to filter videos based on search input
+    function searchVideos() {
+        const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+        const videoItems = document.querySelectorAll('.video-item');
+
+        videoItems.forEach(item => {
+            const title = item.getAttribute('data-title').toLowerCase();
+            if (title.includes(searchTerm)) {
+                item.style.display = 'block'; // Show matching video
+            } else {
+                item.style.display = 'none'; // Hide non-matching video
+            }
+        });
+    }
+
+    // Function to go to next video after 2 seconds fake loading screen
+    function chooseNextVideo() {
+        const optionsContainer = document.getElementById('optionsContainer');
+        optionsContainer.style.display = 'none'; // Hide options
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.display = 'flex'; // Show loading screen
+
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            const videos = document.querySelectorAll('.video-player');
+            let currentIndex = Array.from(videos).indexOf(currentVideo);
+            currentIndex = (currentIndex + 1) % videos.length;
+            playVideo(videos[currentIndex].id); // Play next video
+        }, 2000); // Simulate a fake loading screen for 2 seconds
+    }
+
+    // Function to preview the next video
+    function choosePreview() {
+        const optionsContainer = document.getElementById('optionsContainer');
+        optionsContainer.style.display = 'none'; // Hide options
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.display = 'flex'; // Show loading screen
+
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            alert("Previewing next video..."); // Preview logic can be implemented here
+        }, 2000); // Simulate a fake loading screen for 2 seconds
+    }
+</script>
+
+</body>
+</html>

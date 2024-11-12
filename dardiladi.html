@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Video Gallery</title>
+    <style>
+        /* General reset for consistent styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #ffffff;
+            background-color: #202944; /* Dark background */
+            background-image: url('assets/images/contact-bg.jpg'); /* Optional background */
+            background-size: cover;
+            overflow-x: hidden;
+        }
+
+        /* Header styling */
+        header {
+            background-color: #f5a425; /* Base background color */
+            color: #DFF2EB; /* Text color */
+            text-align: center;
+            padding: 70px 20px; /* Increased padding for better header size */
+            position: relative;
+            background-image: url('assets/images/dardiladi.jpg'); /* Background image */
+            background-size: cover;
+            background-position: center 20%;
+        }
+
+        header h1, header h4 {
+    position: relative;
+    z-index: 2;
+    font-size: 3rem;
+    line-height: 1.2; /* Adjusted for better readability */
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); /* Text shadow added */
+}
+
+
+        /* Search Bar Styles */
+        .search-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .search-bar {
+            padding: 10px;
+            font-size: 1.2rem;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 5px;
+            border: 2px solid #f5a425;
+            background-color: #333;
+            color: white;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .video-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background-color: transparent;
+            border-radius: 8px;
+            box-shadow: none;
+            transition: transform 0.3s ease;
+            position: relative;
+            text-align: center;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: auto;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .video-thumbnail:hover {
+            transform: scale(1.05);
+        }
+
+        .video-thumbnail::after {
+            content: '▶';
+            font-size: 40px;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-thumbnail:hover::after {
+            opacity: 1;
+        }
+
+        .video-info {
+            padding: 8px;
+            background-color: #333;
+            width: 100%;
+        }
+
+        .video-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #f5a425;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .video-description {
+            font-size: 0.8em; /* Reduced font size for mobile */
+            color: #DFF2EB;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .video-player {
+            display: none; /* Initially hidden */
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        footer {
+            background-color: #2A3663;
+            color: #DFF2EB;
+            text-align: center;
+            padding: 15px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Loading screen styles */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2rem;
+            display: none;
+        }
+
+        /* Option buttons container */
+        .options-container {
+            display: none;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .options-container button {
+            background-color: #f5a425;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .options-container button:hover {
+            background-color: #D67A2F;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 767px) {
+            header h1 {
+                font-size: 2.5rem; /* Smaller header size */
+                line-height: 1.2;
+            }
+
+            .container {
+                grid-template-columns: 1fr; /* Single column layout for mobile */
+                padding: 10px;
+            }
+
+            .video-thumbnail {
+                padding-top: 60%; /* Slightly larger aspect ratio for mobile */
+            }
+
+            .video-title {
+                font-size: 1em; /* Smaller title font */
+            }
+
+            .video-description {
+                font-size: 0.75em; /* Even smaller description font */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>DARDI&LADI <h3>SERIES</h3></h1>
+</header>
+
+<!-- Search Bar -->
+<div class="search-container">
+    <input type="text" id="searchBar" class="search-bar" placeholder="Search videos by title..." oninput="searchVideos()">
+</div>
+
+<!-- Loading Screen -->
+<div class="loading-screen" id="loadingScreen">
+    Loading...
+</div>
+
+<div class="container" id="videoContainer">
+    <!-- Video 1 -->
+    <div class="video-item" data-title="familja">
+        <div class="video-thumbnail" onclick="playVideo('video1')" style="background-image: url('dardiladi/dardi-familja.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">FAMILJA</div>
+            <div class="video-description">Uploaded on Jul 26, 2023</div>
+        </div>
+        <video id="video1" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Ladi_Familja.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Video 2 -->
+    <div class="video-item" data-title="amaneti">
+        <div class="video-thumbnail" onclick="playVideo('video2')" style="background-image: url('dardiladi/amaneti.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">AMANETI</div>
+            <div class="video-description">Uploaded on 27 Sep 2022</div>
+        </div>
+        <video id="video2" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Ladi-Amaneti.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Video 3 -->
+    <div class="video-item" data-title="dhandrri vogel">
+        <div class="video-thumbnail" onclick="playVideo('video3')" style="background-image: url('dardiladi/dhandrri.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">DHANDRRI VOGËL</div>
+            <div class="video-description">Uploaded on 28 Feb 2022</div>
+        </div>
+        <video id="video3" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Ladi_Dhandrri Vogël.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <div class="video-item" data-title="lufta per dashuri">
+        <div class="video-thumbnail" onclick="playVideo('video4')" style="background-image: url('dardiladi/lufta.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">LUFTA PËR DASHURI</div>
+            <div class="video-description">Uploaded on 28 Nov 2021</div>
+        </div>
+        <video id="video4" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Ladi_Lufta për Dashuri.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="FRIKA">
+        <div class="video-thumbnail" onclick="playVideo('video5')" style="background-image: url('dardiladi/FRIKA.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">FRIKA</div>
+            <div class="video-description">Uploaded on 25 Sept 2021</div>
+        </div>
+        <video id="video5" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Ladi_Frika.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="Kujtimet">
+        <div class="video-thumbnail" onclick="playVideo('video6')" style="background-image: url('dardiladi/kujtimet.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">EPISODI 6</div>
+            <div class="video-description">Uploaded on 1 Jun 2021</div>
+        </div>
+        <video id="video6" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi-“Kujtimet”.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="FORCA">
+        <div class="video-thumbnail" onclick="playVideo('video7')" style="background-image: url('dardiladi/FROCA.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">FORCA</div>
+            <div class="video-description">Uploaded on 9 Apr 2021</div>
+        </div>
+        <video id="video7" class="video-player" controls preload="none">
+            <source src="dardiladi/Ladi-Forca (1).mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="Dardi-Ladi_Different_lives">
+        <div class="video-thumbnail" onclick="playVideo('video8')" style="background-image: url('dardiladi/different.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">DIFFERENT LIVES</div>
+            <div class="video-description">Uploaded on 18 Feb 2021</div>
+        </div>
+        <video id="video8" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi-Ladi_Different Lives.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="SUKSES">
+        <div class="video-thumbnail" onclick="playVideo('video9')" style="background-image: url('dardiladi/Sukses.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">SUKSES</div>
+            <div class="video-description">Uploaded on 2 Jan 2021</div>
+        </div>
+        <video id="video9" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi-Ladi_SUKSES.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="udhezimet p2">
+        <div class="video-thumbnail" onclick="playVideo('video10')" style="background-image: url('dardiladi/UDHEZIMETP1.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">UDHËZIMET PJESA 2</div>
+            <div class="video-description">Uploaded on 19 Oct 2020</div>
+        </div>
+        <video id="video10" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi-Baca Bushë_UDHËZIMET (P2).mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="udhezimet p1">
+        <div class="video-thumbnail" onclick="playVideo('video11')" style="background-image: url('dardiladi/pjesa1.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">UDHËZIMET PJESA 1</div>
+            <div class="video-description">Uploaded on 26 Sept 2020</div>
+        </div>
+        <video id="video11" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi-Baca Bush_UDHËZIMET  (P1).mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="nje jete e re">
+        <div class="video-thumbnail" onclick="playVideo('video4')" style="background-image: url('dardiladi/jetere.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">NJË JETË E RE</div>
+            <div class="video-description">Uploaded on 24 Jul 2020</div>
+        </div>
+        <video id="video12" class="video-player" controls preload="none">
+            <source src="dardiladi/Dard&Ladi-Një jetë e re!.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="AVENTURË">
+        <div class="video-thumbnail" onclick="playVideo('video13')" style="background-image: url('dardiladi/aventur.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">AVENTURË</div>
+            <div class="video-description">Uploaded on 22 Jul 2020</div>
+        </div>
+        <video id="video13" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Ladi-Në aventurë.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="fillimi">
+        <div class="video-thumbnail" onclick="playVideo('video14')" style="background-image: url('dardiladi/FILLIMI.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">FILLIMI</div>
+            <div class="video-description">Uploaded on 1 Jun 2020</div>
+        </div>
+        <video id="video14" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Ladi_Fillimi.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="Love">
+        <div class="video-thumbnail" onclick="playVideo('video15')" style="background-image: url('dardiladi/Picsart_24-11-11_21-56-33-776.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">LOVE</div>
+            <div class="video-description">Uploaded on 21 May 2020</div>
+        </div>
+        <video id="video15" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi-Love.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+    </div>
+    <div class="video-item" data-title="PAUSE">
+        <div class="video-thumbnail" onclick="playVideo('video16')" style="background-image: url('dardiladi/Picsart_24-11-11_21-57-30-878.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">PAUSE</div>
+            <div class="video-description">Uploaded on 7 Apr 2020</div>
+        </div>
+        <video id="video16" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Baca Bush-PAUSE.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="LOSS">
+        <div class="video-thumbnail" onclick="playVideo('video17')" style="background-image: url('dardiladi/Picsart_24-11-11_21-58-27-496.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">LOSS</div>
+            <div class="video-description">Uploaded on 5 Mar 2020</div>
+        </div>
+        <video id="video17" class="video-player" controls preload="none">
+            <source src="dardiladi/Dardi&Yllza-LOSS.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="End of the year">
+        <div class="video-thumbnail" onclick="playVideo('video18')" style="background-image: url('dardiladi/fundviti.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">END OF THE YEAR</div>
+            <div class="video-description">Uploaded on 1 Jan 2020</div>
+        </div>
+        <video id="video18" class="video-player" controls preload="none">
+            <source src="dardiladi/DARDI-THE END OF YEAR.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="1 year">
+        <div class="video-thumbnail" onclick="playVideo('video19')" style="background-image: url('dardiladi/1vit.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">1 YEAR</div>
+            <div class="video-description">Uploaded on 19 Oct 2019</div>
+        </div>
+        <video id="video19" class="video-player" controls preload="none">
+            <source src="dardiladi/DARDI_1-YEAR.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="IT'S BACK">
+        <div class="video-thumbnail" onclick="playVideo('video20')" style="background-image: url('dardiladi/Picsart_24-11-11_22-01-16-563.jpg');"></div>
+        <div class="video-info">
+            <div class="video-title">IT'S BACK</div>
+            <div class="video-description">Uploaded on 3 Oct 2019</div>
+        </div>
+        <video id="video20" class="video-player" controls preload="none">
+            <source src="dardiladi/DARDI-It's BACK.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-item" data-title="Troll">
+        <div class="video-thumbnail" onclick="playVideo('video21')" style="background-image: url('dardiladi/troll.webp');"></div>
+        <div class="video-info">
+            <div class="video-title">TROLL</div>
+            <div class="video-description">Uploaded on  11 Sept 2019</div>
+        </div>
+        <video id="video21" class="video-player" controls preload="none">
+            <source src="dardiladi/DARDI-Troll.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    
+
+      
+</div>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+<footer>
+    <p>&copy; Dard&Ladi</p>
+</footer>
+
+<div class="options-container" id="optionsContainer">
+    <button onclick="chooseNextVideo()">Next Video</button>
+    <button onclick="choosePreview()">Preview</button>
+</div>
+
+<script>
+    let currentVideo = null;
+
+    // Play video when thumbnail is clicked
+    function playVideo(videoId) {
+        if (currentVideo) {
+            currentVideo.pause();
+            currentVideo.style.display = 'none';
+        }
+
+        const videoElement = document.getElementById(videoId);
+        const videoThumbnail = videoElement.previousElementSibling;
+
+        // Show loading screen when video is starting
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.display = 'flex';
+
+        // Hide thumbnail and show video player
+        videoThumbnail.style.display = 'none';
+        videoElement.style.display = 'block';
+
+        // Play video when it's ready
+        videoElement.load();
+        videoElement.play();
+
+        // Hide loading screen once video is ready to play
+        videoElement.oncanplaythrough = function() {
+            loadingScreen.style.display = 'none';
+        };
+
+        // Request fullscreen for the video
+        if (videoElement.requestFullscreen) {
+            videoElement.requestFullscreen();
+        } else if (videoElement.mozRequestFullScreen) {
+            videoElement.mozRequestFullScreen();
+        } else if (videoElement.webkitRequestFullscreen) {
+            videoElement.webkitRequestFullscreen();
+        } else if (videoElement.msRequestFullscreen) {
+            videoElement.msRequestFullscreen();
+        }
+
+        // Automatically show options after video ends
+        videoElement.addEventListener('ended', function() {
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.style.display = 'flex'; // Show options
+        });
+
+        // Set current video to the one playing
+        currentVideo = videoElement;
+    }
+
+    // Listen for fullscreen change event
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+        // If exiting fullscreen, hide the current video and show the thumbnail
+        if (!document.fullscreenElement && currentVideo) {
+            currentVideo.pause();
+            currentVideo.style.display = 'none'; // Hide video
+            const videoThumbnail = currentVideo.previousElementSibling;
+            videoThumbnail.style.display = 'block'; // Show thumbnail again
+        }
+    }
+
+    // Function to filter videos based on search input
+    function searchVideos() {
+        const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+        const videoItems = document.querySelectorAll('.video-item');
+
+        videoItems.forEach(item => {
+            const title = item.getAttribute('data-title').toLowerCase();
+            if (title.includes(searchTerm)) {
+                item.style.display = 'block'; // Show matching video
+            } else {
+                item.style.display = 'none'; // Hide non-matching video
+            }
+        });
+    }
+
+    // Function to go to next video after 2 seconds fake loading screen
+    function chooseNextVideo() {
+        const optionsContainer = document.getElementById('optionsContainer');
+        optionsContainer.style.display = 'none'; // Hide options
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.display = 'flex'; // Show loading screen
+
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            const videos = document.querySelectorAll('.video-player');
+            let currentIndex = Array.from(videos).indexOf(currentVideo);
+            currentIndex = (currentIndex + 1) % videos.length;
+            playVideo(videos[currentIndex].id); // Play next video
+        }, 2000); // Simulate a fake loading screen for 2 seconds
+    }
+
+    // Function to preview the next video
+    function choosePreview() {
+        const optionsContainer = document.getElementById('optionsContainer');
+        optionsContainer.style.display = 'none'; // Hide options
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.display = 'flex'; // Show loading screen
+
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            alert("Previewing next video..."); // Preview logic can be implemented here
+        }, 2000); // Simulate a fake loading screen for 2 seconds
+    }
+</script>
+
+</body>
+</html>
